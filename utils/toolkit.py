@@ -84,7 +84,6 @@ def split_images_labels(imgs):
     for item in imgs:
         images.append(item[0])
         labels.append(item[1])
-
     return np.array(images), np.array(labels)
 
 def save_fc(args, model):
@@ -101,6 +100,14 @@ def save_fc(args, model):
     with open(_save_path, "a+") as f:
         f.write(f"{args['time_str']},{args['model_name']},{_path} \n")
 
+# 修改 save_fc2
+def save_fc2(args, model):
+    _path = os.path.join(args['logfilename'], "fc2.pt")
+
+    fc_state_dict = model._network.fc.state_dict()
+    torch.save(fc_state_dict, _path)
+
+
 def save_model(args, model):
     #used in PODNet
     _path = os.path.join(args['logfilename'], "model.pt")
@@ -109,3 +116,9 @@ def save_model(args, model):
     else:
         weight = model._network.cpu()
     torch.save(weight, _path)
+
+def save_model2(args, model):
+    _path = os.path.join(args['logfilename'], "model2.pt")
+
+    state_dict = model._network.state_dict()  # 获取模型参数
+    torch.save(state_dict, _path)  # 保存为 state_dict 更安全

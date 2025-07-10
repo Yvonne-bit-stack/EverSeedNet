@@ -3,9 +3,9 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
-from utils.data import iCIFAR10, iCIFAR100, iImageNet100, iImageNet1000
+from utils.data import iCIFAR10, iCIFAR100, iImageNet100, iImageNet1000, iSeeds
 from tqdm import tqdm
-
+from torch.utils.data import DataLoader
 class DataManager(object):
     def __init__(self, dataset_name, shuffle, seed, init_cls, increment):
         self.dataset_name = dataset_name
@@ -24,10 +24,10 @@ class DataManager(object):
 
     def get_task_size(self, task):
         return self._increments[task]
-    
+
     def get_accumulate_tasksize(self,task):
         return sum(self._increments[:task+1])
-    
+
     def get_total_classnum(self):
         return len(self._class_order)
 
@@ -81,7 +81,6 @@ class DataManager(object):
         else:
             return DummyDataset(data, targets, trsf, self.use_path)
 
-        
     def get_finetune_dataset(self,known_classes,total_classes,source,mode,appendent,type="ratio"):
         if source == 'train':
             x, y = self._train_data, self._train_targets
@@ -183,6 +182,32 @@ class DataManager(object):
             train_data, train_targets, trsf, self.use_path
         ), DummyDataset(val_data, val_targets, trsf, self.use_path)
 
+    def get_test_loader(self, task_id):
+        """
+        获取测试数据加载器
+        :param task_id: 任务编号
+        :return: 测试数据加载器
+        """
+        indices = self._get_task_indices(task_id)
+        test_dataset = self.get_dataset(indices, source="test", mode="test")
+        test_loader = DataLoader(
+            test_dataset,
+            batch_size=128,  # 你可以根据需要调整 batch_size
+            shuffle=False,
+            num_workers=8,  # 你可以根据需要调整 num_workers
+        )
+        return test_loader
+
+    def _get_task_indices(self, task_id):
+        """
+        获取任务对应的类别索引
+        :param task_id: 任务编号
+        :return: 类别索引列表
+        """
+        start_idx = sum(self._increments[:task_id])
+        end_idx = start_idx + self._increments[task_id]
+        return list(range(start_idx, end_idx))
+
     def _setup_data(self, dataset_name, shuffle, seed):
         idata = _get_idata(dataset_name)
         idata.download_data()
@@ -215,7 +240,7 @@ class DataManager(object):
 
     def _select(self, x, y, low_range, high_range):
         idxes = np.where(np.logical_and(y >= low_range, y < high_range))[0]
-        
+
         if isinstance(x,np.ndarray):
             x_return = x[idxes]
         else:
@@ -277,6 +302,8 @@ def _get_idata(dataset_name):
         return iImageNet1000()
     elif name == "imagenet100":
         return iImageNet100()
+    elif name == "iseeds":
+        return iSeeds()
     else:
         raise NotImplementedError("Unknown dataset {}.".format(dataset_name))
 

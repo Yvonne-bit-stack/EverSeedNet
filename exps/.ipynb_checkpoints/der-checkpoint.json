@@ -1,0 +1,14 @@
+{
+    "prefix": "reproduce",
+    "dataset": "iseeds",
+    "memory_size": 200,
+    "memory_per_class": 10,
+    "fixed_memory": false,
+    "shuffle": true,
+    "init_cls": 5,
+    "increment": 1,
+    "model_name": "der",
+    "convnet_type": "resnet32",
+    "device": ["0"],
+    "seed": [1993]
+}

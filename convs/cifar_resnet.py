@@ -61,7 +61,7 @@ class ResNetBasicblock(nn.Module):
 
     def __init__(self, inplanes, planes, stride=1, downsample=None):
         super(ResNetBasicblock, self).__init__()
-
+        # 卷积层和批量归一化层
         self.conv_a = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn_a = nn.BatchNorm2d(planes)
 
@@ -71,7 +71,7 @@ class ResNetBasicblock(nn.Module):
         self.downsample = downsample
 
     def forward(self, x):
-        residual = x
+        residual = x    #残差连接
 
         basicblock = self.conv_a(x)
         basicblock = self.bn_a(basicblock)
@@ -88,6 +88,7 @@ class ResNetBasicblock(nn.Module):
 
 class CifarResNet(nn.Module):
     """
+    继承自 nn.Module，是一个标准的 PyTorch 模型模块
     ResNet optimized for the Cifar Dataset, as specified in
     https://arxiv.org/abs/1512.03385.pdf
     """
@@ -109,7 +110,7 @@ class CifarResNet(nn.Module):
         self.avgpool = nn.AvgPool2d(8)
         self.out_dim = 64 * block.expansion
         self.fc = nn.Linear(64*block.expansion, 10)
-
+        # 权重初始化
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
@@ -155,6 +156,29 @@ class CifarResNet(nn.Module):
     def last_conv(self):
         return self.stage_3[-1].conv_b
 
+"新增cnn"
+class PlainCNNBlock(nn.Module):
+    expansion = 1
+
+    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
+        super(PlainCNNBlock, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.relu1 = nn.ReLU(inplace=True)
+
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.relu2 = nn.ReLU(inplace=True)
+
+        # 👇 虽然没用 downsample，但还是接一下防止出错
+        self.downsample = None
+
+    def forward(self, x):
+        out = self.relu1(self.bn1(self.conv1(x)))
+        out = self.relu2(self.bn2(self.conv2(out)))
+        return out
+
+
 
 def resnet20mnist():
     """Constructs a ResNet-20 model for MNIST."""
@@ -175,7 +199,7 @@ def resnet20():
 
 
 def resnet32():
-    """Constructs a ResNet-32 model for CIFAR-10."""
+    """Constructs a ResNet-32 model for CIFAR-10.特征提取+全连接"""
     model = CifarResNet(ResNetBasicblock, 32)
     return model
 
@@ -204,4 +228,9 @@ def resnet14():
 
 def resnet26():
     model = CifarResNet(ResNetBasicblock, 26)
+    return model
+
+def cnn():
+    """Constructs a Plain CNN (32-layer style) model for MNIST."""
+    model = CifarResNet(PlainCNNBlock, 32, channels=3)
     return model

@@ -1,0 +1,17 @@
+{
+    "prefix": "reproduce",
+    "dataset": "iseeds",
+    "memory_size": 200,
+    "memory_per_class": 20,
+    "fixed_memory": true,
+    "shuffle": true,
+    "init_cls": 5,
+    "increment": 1,
+    "model_name": "similarity_der",
+    "convnet_type": "resnet32",
+    "device": ["0"],
+    "seed": [1993],
+    "min_samples": 10,
+    "max_samples": 30,
+    "similarity_threshold": 0.5
+}

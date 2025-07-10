@@ -158,12 +158,13 @@ class iCaRL(BaseLearner):
                 logits = self._network(inputs)["logits"]
 
                 loss_clf = F.cross_entropy(logits, targets)
+                # 使用知识蒸馏,保护旧知识
                 loss_kd = _KD_loss(
                     logits[:, : self._known_classes],
                     self._old_network(inputs)["logits"],
                     T,
                 )
-
+                # 分类损失和知识蒸馏损失
                 loss = loss_clf + loss_kd
 
                 optimizer.zero_grad()
