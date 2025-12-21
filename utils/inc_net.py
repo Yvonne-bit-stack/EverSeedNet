@@ -22,7 +22,7 @@ def get_convnet(args, pretrained=False):
     name = args["convnet_type"].lower()
     if name == "resnet32":
         return resnet32()
-    # 新建模块
+ 
     elif name == "cnn":
         return cnn()
     elif name == "resnet18":
@@ -60,7 +60,6 @@ def get_convnet(args, pretrained=False):
     else:
         raise NotImplementedError("Unknown type {}".format(name))
 
-# 网络的基类，定义了基本的网络结构和方法
 class BaseNet(nn.Module):
     def __init__(self, args, pretrained):
         super(BaseNet, self).__init__()
@@ -123,7 +122,6 @@ class BaseNet(nn.Module):
         test_acc = model_infos['test_acc']
         return test_acc
 
-# BaseNet，用于处理增量学习任务。它支持动态更新全连接层（fc），以适应新的类别
 class IncrementalNet(BaseNet):
     def __init__(self, args, pretrained, gradcam=False):
         super().__init__(args, pretrained)
@@ -194,7 +192,7 @@ class IncrementalNet(BaseNet):
             forward_hook
         )
 
-# 继承自 IncrementalNet，用于实现特定的增量学习算法
+
 class IL2ANet(IncrementalNet):
 
     def update_fc(self, num_old, num_total, num_aux):
@@ -207,7 +205,7 @@ class IL2ANet(IncrementalNet):
         del self.fc
         self.fc = fc
 
-# 继承自 BaseNet，使用余弦相似性来更新全连接层
+
 class CosineIncrementalNet(BaseNet):
     def __init__(self, args, pretrained, nb_proxy=1):
         super().__init__(args, pretrained)
@@ -240,7 +238,6 @@ class CosineIncrementalNet(BaseNet):
 
         return fc
 
-# 实现偏差校正层，用于调整输出的偏差
 class BiasLayer_BIC(nn.Module):
     def __init__(self):
         super(BiasLayer_BIC, self).__init__()
@@ -257,7 +254,7 @@ class BiasLayer_BIC(nn.Module):
     def get_params(self):
         return (self.alpha.item(), self.beta.item())
 
-# 继承自 BaseNet，在增量学习中使用偏差校正层
+
 class IncrementalNetWithBias(BaseNet):
     def __init__(self, args, pretrained, bias_correction=False):
         super().__init__(args, pretrained)
@@ -314,7 +311,7 @@ class IncrementalNetWithBias(BaseNet):
         for param in self.parameters():
             param.requires_grad = True
 
-# 动态扩展的网络结构，用于增量学习
+
 class DERNet(nn.Module):
     def __init__(self, args, pretrained):
         super(DERNet, self).__init__()
@@ -348,13 +345,7 @@ class DERNet(nn.Module):
 
         out.update({"aux_logits": aux_logits, "features": features})
         return out
-        """
-        {
-            'features': features
-            'logits': logits
-            'aux_logits':aux_logits
-        }
-        """
+
 
     def update_fc(self, nb_classes):
         if len(self.convnets) == 0:
@@ -620,7 +611,7 @@ class BiasLayer(nn.Module):
 
     def forward(self, x , bias=True):
         ret_x = x.clone()
-        ret_x = (self.alpha+1) * x # + self.beta
+        ret_x = (self.alpha+1) * x 
         if bias:
             ret_x = ret_x + self.beta
         return ret_x
@@ -792,13 +783,7 @@ class AdaptiveNet(nn.Module):
         out.update({"base_features":base_feature_map})
         return out
                 
-        '''
-        {
-            'features': features
-            'logits': logits
-            'aux_logits':aux_logits
-        }
-        '''
+
         
     def update_fc(self,nb_classes):
         _ , _new_extractor = get_convnet(self.args)
@@ -886,16 +871,6 @@ class AdaptiveNet(nn.Module):
 
 
 class ACILNet(BaseNet):
-    """
-    Network structure of the ACIL [1].
-
-    This implementation refers to the official implementation https://github.com/ZHUANGHP/Analytic-continual-learning.
-
-    References:
-    [1] Zhuang, Huiping, et al.
-        "ACIL: Analytic class-incremental learning with absolute memorization and privacy protection."
-        Advances in Neural Information Processing Systems 35 (2022): 11602-11614.
-    """
     def __init__(
         self,
         args: Dict[str, Any],
@@ -953,16 +928,6 @@ class ACILNet(BaseNet):
 
 
 class DSALNet(ACILNet):
-    """
-    Network structure of the DS-AL [1].
-
-    This implementation refers to the official implementation https://github.com/ZHUANGHP/Analytic-continual-learning.
-
-    References:
-    [1] Zhuang, Huiping, et al.
-        "DS-AL: A Dual-Stream Analytic Learning for Exemplar-Free Class-Incremental Learning."
-        Proceedings of the AAAI Conference on Artificial Intelligence. Vol. 38. No. 15. 2024.
-    """
     def __init__(
         self,
         args: Dict[str, Any],
@@ -995,16 +960,15 @@ class DSALNet(ACILNet):
         Y_main = torch.nn.functional.one_hot(y, num_classes=num_classes)
         X = self.buffer(self.convnet(X)["features"])
 
-        # Train the main stream
+
         X_main = self.activation_main(X)
         self.fc.fit(X_main, Y_main)
         self.fc.after_task()
 
-        # Previous label cleansing (PLC)
+
         Y_comp = Y_main - self.fc(X_main)["logits"]
         Y_comp[:, : -self.increment_size] = 0
 
-        # Train the compensation stream
         X_comp = self.activation_comp(X)
         self.fc_comp.fit(X_comp, Y_comp)
 
@@ -1023,7 +987,6 @@ class DSALNet(ACILNet):
         )
 
     def generate_fc(self, *_) -> None:
-        # Main stream
         self.fc = RecursiveLinear(
             self.buffer_size,
             self.gamma,

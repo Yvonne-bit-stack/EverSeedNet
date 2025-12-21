@@ -120,5 +120,5 @@ def save_model(args, model):
 def save_model2(args, model):
     _path = os.path.join(args['logfilename'], "model2.pt")
 
-    state_dict = model._network.state_dict()  # 获取模型参数
-    torch.save(state_dict, _path)  # 保存为 state_dict 更安全
+    state_dict = model._network.state_dict()  
+    torch.save(state_dict, _path)  

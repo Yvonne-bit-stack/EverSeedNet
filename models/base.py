@@ -339,17 +339,17 @@ class BaseLearner(object):
 
                 selected_exemplars.append(
                     np.array(data[i])
-                )  # New object to avoid passing by inference
+                ) 
                 exemplar_vectors.append(
                     np.array(vectors[i])
-                )  # New object to avoid passing by inference
+                )  
 
                 vectors = np.delete(
                     vectors, i, axis=0
-                )  # Remove it to avoid duplicative selection
+                ) 
                 data = np.delete(
                     data, i, axis=0
-                )  # Remove it to avoid duplicative selection
+                )  
 
             selected_exemplars = np.array(selected_exemplars)
             exemplar_targets = np.full(m, class_idx)

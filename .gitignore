@@ -3,3 +3,6 @@ __pycache__/
 logs/
 .vscode/
 der-incremental-learning/
+config.py
+config_local.py
+*.local.py

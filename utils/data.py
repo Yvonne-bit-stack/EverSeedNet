@@ -142,9 +142,8 @@ class iSeeds(iData):
     class_order = np.arange(20).tolist()
 
     def download_data(self):
-        # assert 0, "You should specify the folder of your dataset"
         train_dir = "seed_dataset2/train/"
-        test_dir = "seed_dataset2/val/"
+        test_dir = "seed_dataset2/test/"
 
         train_dset = datasets.ImageFolder(train_dir)
         test_dset = datasets.ImageFolder(test_dir)

@@ -183,18 +183,13 @@ class DataManager(object):
         ), DummyDataset(val_data, val_targets, trsf, self.use_path)
 
     def get_test_loader(self, task_id):
-        """
-        获取测试数据加载器
-        :param task_id: 任务编号
-        :return: 测试数据加载器
-        """
         indices = self._get_task_indices(task_id)
         test_dataset = self.get_dataset(indices, source="test", mode="test")
         test_loader = DataLoader(
             test_dataset,
-            batch_size=128,  # 你可以根据需要调整 batch_size
+            batch_size=128, 
             shuffle=False,
-            num_workers=8,  # 你可以根据需要调整 num_workers
+            num_workers=8,  
         )
         return test_loader
 
@@ -309,10 +304,7 @@ def _get_idata(dataset_name):
 
 
 def pil_loader(path):
-    """
-    Ref:
-    https://pytorch.org/docs/stable/_modules/torchvision/datasets/folder.html#ImageFolder
-    """
+
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, "rb") as f:
         img = Image.open(f)
